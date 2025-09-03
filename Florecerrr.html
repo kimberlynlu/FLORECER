@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Florecer| Seguimiento del ciclo</title>
+  <style>
+/* ====== Diseño base con variables para temas femeninos ====== */
+:root {
+  --bg: #fff0f8;            /* fondo principal rosa muy suave */
+  --panel: #ffffff;         /* tarjetas */
+  --text: #a44c82;          /* texto base (rosa-vino) */
+  --muted: #9a7fa5;         /* texto secundario (lila apagado) */
+  --primary: #e87ab2;       /* rosa vibrante femenino */
+  --primary-contrast: #ffffff;
+  --accent: #ff4d88;        /* rosa fuerte (periodo) */
+  --accent-2: #ff9ecf;      /* rosa pastel para ovulación */
+  --ring: rgba(232, 122, 178, 0.3);
+  --border: #f5cfe0;
+  --shadow: 0 10px 25px rgba(230, 60, 120, 0.1);
+  --chip: #ffe0f0;
+  --chip-text: #c94f8a;
+}
+
+[data-theme="dark"] {
+  --bg: #1b0b17;            /* fondo vino muy oscuro */
+  --panel: #2a1524;         /* panel rosado oscuro */
+  --text: #f6d9ea;          /* texto claro rosado */
+  --muted: #d6a8c6;         /* texto secundario lila claro */
+  --primary: #ff7ab8;       /* rosa neón suave */
+  --primary-contrast: #2a1524;
+  --accent: #ff5c8a;        /* rosa fuerte brillante */
+  --accent-2: #ffb3d9;      /* rosa pastel claro */
+  --ring: rgba(255, 122, 184, 0.35);
+  --border: #442133;
+  --shadow: 0 10px 25px rgba(255, 105, 180, 0.25);
+  --chip: #3d2033;
+  --chip-text: #ffbdd6;
+}
+
+    
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    /* ====== Layout ====== */
+    .app { display: grid; grid-template-columns: 280px 1fr; min-height: 100vh; }
+    .sidebar {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 20px 14px;
+      position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .brand { display:flex; align-items:center; gap:10px; padding:8px 10px; margin-bottom: 16px; }
+    .logo {
+      width: 36px; height: 36px; border-radius: 12px; display:grid; place-items:center;
+      background: linear-gradient(135deg, var(--primary), var(--accent)); color: #fff; font-weight: 800;
+      box-shadow: var(--shadow);
+    }
+    .brand h1 { font-size: 1.05rem; margin:0; }
+    .muted { color: var(--muted); font-size: .9rem; }
+
+    .nav { display:flex; flex-direction:column; gap:6px; margin-top: 10px; }
+    .nav button {
+      text-align:left; width:100%; padding:10px 12px; border-radius:12px; border:1px solid transparent; background: transparent; color: var(--text);
+      cursor:pointer; font-size:.95rem;
+    }
+    .nav button.active { background: var(--chip); color: var(--chip-text); border-color: transparent; }
+    .nav button:hover { background: rgba(107,76,255,0.08); }
+
+    .sidebar .section { margin-top: 18px; padding-top: 18px; border-top: 1px dashed var(--border); }
+    .theme-toggle { margin-top: 10px; }
+
+    .content { padding: 24px; }
+    .toolbar { display:flex; align-items:center; justify-content:space-between; gap: 12px; margin-bottom: 16px; }
+    .toolbar .welcome { font-weight: 700; }
+
+    .grid { display:grid; grid-template-columns: repeat(12, 1fr); gap: 16px; }
+
+    .card {
+      grid-column: span 12;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 16px; box-shadow: var(--shadow);
+    }
+    @media (min-width: 960px) {
+      .card.span-4 { grid-column: span 4; }
+      .card.span-6 { grid-column: span 6; }
+      .card.span-8 { grid-column: span 8; }
+    }
+
+    /* ====== Form controls ====== */
+    label { font-size:.9rem; color: var(--muted); display:block; margin-bottom:6px; }
+    input, select, textarea, .btn {
+      width:100%; padding: 10px 12px; border-radius: 12px; border:1px solid var(--border); background: var(--panel); color: var(--text);
+      box-shadow: 0 0 0 0 var(--ring); outline: none;
+    }
+    input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 4px var(--ring); }
+    .btn { background: var(--primary); color: var(--primary-contrast); border-color: transparent; cursor: pointer; font-weight: 600; }
+    .btn.secondary { background: transparent; color: var(--text); border-color: var(--border); }
+    .btn.danger { background: var(--accent); }
+    .btn.small { padding: 8px 10px; font-size:.9rem; }
+
+    .chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip { background: var(--chip); color: var(--chip-text); padding:6px 10px; border-radius:999px; font-size:.8rem; }
+
+    /* ====== Calendar ====== */
+   /* Contenedor principal del calendario */
+.calendar { 
+    width: 100%; 
+}
+
+/* Encabezado con controles */
+.cal-header { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    margin-bottom: 10px; 
+}
+
+/* Grid de días */
+.cal-grid { 
+    display: grid; 
+    grid-template-columns: repeat(7, 1fr); 
+    gap: 6px; 
+}
+
+/* Días de la semana */
+.dow { 
+    text-align: center; 
+    font-size: .8rem; 
+    color: var(--muted); 
+}
+/* Animaciones generales para todos los botones */
+button {
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+/* Al pasar el mouse */
+button:hover {
+  transform: scale(1.08);          /* crece un poco */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Al hacer clic */
+button:active {
+  transform: scale(0.95);          /* se encoge un poco */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Animación suave de color (modo claro y oscuro) */
+button {
+  background-color: var(--btn-bg, #4a90e2);
+  color: var(--btn-text, #fff);
+}
+
+/* Puedes definir diferentes estilos según el modo */
+body.light button {
+  --btn-bg: #4a90e2;
+  --btn-text: #fff;
+}
+
+body.dark button {
+  --btn-bg: #222;
+  --btn-text: #f0f0f0;
+}
+
+/* Cada día */
+.day { 
+    aspect-ratio: 1 / 1; 
+    border: 1px solid var(--border); 
+    border-radius: 10px; 
+    display: grid; 
+    place-items: center; 
+    position: relative; 
+    background: var(--panel);
+    font-weight: 600; 
+}
+
+/* Días fuera del mes */
+.day.muted { 
+    color: var(--muted); 
+    font-weight: 500; 
+}
+
+/* Emojis para cada tipo de día */
+.day.period::after {
+    content: "🩸";  /* periodo */
+    position: absolute;
+    font-size: 13px;
+}
+
+.day.fertile::after {
+    content: "🌱";  /* días fértiles */
+    position: absolute;
+    font-size: 13px;
+}
+
+.day.ovulation::after {
+    content: "🌸";  /* ovulación */
+    position: absolute;
+    font-size: 13px;
+}
+
+/* Leyenda */
+.legend { 
+    display: flex; 
+    gap: 10px; 
+    align-items: center; 
+    font-size: .85rem; 
+    color: var(--muted); 
+    margin-top: 10px; 
+    flex-wrap: wrap; 
+}
+
+.legend span { 
+    display: inline-flex; 
+    align-items: center; 
+    gap: 6px; 
+}
+
+/* Opcional: quitar puntitos si no los quieres */
+.dot { 
+    display: none; 
+}
+
+    .legend { display:flex; gap:10px; align-items:center; font-size:.85rem; color: var(--muted); margin-top: 10px; flex-wrap: wrap; }
+    .legend span { display:inline-flex; align-items:center; gap:6px; }
+    .dot.lg { width:12px; height:12px; position: static; border-radius:100%; display:inline-block; }
+
+    /* ====== Chat ====== */
+    .chat-box { border:1px solid var(--border); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; height: 700px; }
+    .chat-log { flex:1; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px; background: linear-gradient(180deg, rgba(107,76,255,0.06), transparent); }
+    .msg { max-width:70%; padding:10px 12px; border-radius:14px; box-shadow: var(--shadow); }
+    .me { align-self:flex-end; background: var(--primary); color: var(--primary-contrast); }
+    .bot { align-self:flex-start; background: var(--panel); border:1px solid var(--border); }
+    .chat-input { display:flex; gap:8px; padding:10px; border-top:1px solid var(--border); background: var(--panel); }
+
+    /* ====== Onboarding modal ====== */
+    .modal { position:fixed; inset:0; background: rgba(0,0,0,.45); display:none; align-items:center; justify-content:center; padding:20px; }
+    .modal.show { display:flex; }
+    .modal .box { background: var(--panel); color: var(--text); border:1px solid var(--border); border-radius: 16px; width:min(720px, 100%); box-shadow: var(--shadow); padding: 18px; }
+    .modal h2 { margin-top: 0; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width:800px) { .app { grid-template-columns: 1fr; } .sidebar { position: static; height:auto; } .row { grid-template-columns: 1fr; } }
+
+    .helper { font-size:.9rem; color: var(--muted); }
+    .divider { height:1px; background: var(--border); margin: 12px 0; }
+    .sugerencias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sugerencias button {
+  background-color: #3a2a3f; /* Color del modo oscuro */
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.3s;
+}
+
+.sugerencias button:hover {
+  background-color: #ff6699; /* Hover rosa */
+}
+.brand .logo {
+  width: 50px;       /* ancho del logo */
+  height: 50px;      /* alto del logo */
+  object-fit: contain; /* para que mantenga proporción */
+  border-radius: 8px;  /* opcional, si quieres esquinas redondeadas */
+}
+
+
+  </style>
+</head>
+<body>
+<div id="app" class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="imagenes/logo.jpeg" alt="Logo Florecer" class="logo" />
+      <div>
+        <h1>Florecer</h1>
+        <div class="muted" id="userTag">Bienvenida</div>
+        </div>
+      </div>
+      <div class="nav" id="nav">
+        <button data-view="inicio" class="active">🏠 Inicio</button>
+        <button data-view="calendario">🗓️ Calendario</button>
+        <button data-view="sintomas">📝 Síntomas y humor</button>
+        <button data-view="chat">👩🏽 Chat bot</button>
+        <button data-view="flujos">🩸 Guía de flujos</button>
+        <button data-view="anticonceptivos">💊 Métodos anticonceptivos</button>
+        <button data-view="salud">🥗 Salud alimenticia</button>
+        <button data-view="ajustes">⚙️ Configuración</button>
+        
+
+       
+
+      </div>
+      <div class="section">
+        <button id="themeBtn" class="btn small" type="button">Alternar tema (Claro/Oscuro)</button>
+        <div class="theme-toggle helper">El tema se guarda en tu dispositivo.</div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="toolbar">
+        <div class="welcome" id="welcomeText">Hola</div>
+        <div class="chips" id="goalChips"></div>
+      </div>
+
+      <!-- INICIO -->
+      <section class="grid view" id="view-inicio">
+        <div class="card span-6">
+          <h3>Próxima ovulación estimada</h3>
+          <p class="helper">Basado en tu último periodo y la duración del ciclo. Puedes ajustar estos valores en <b>Configuración</b>.</p>
+          <div id="ovulationSummary" class="chips" style="margin-top:8px"></div>
+          <div class="divider"></div>
+          <div class="row">
+            <div>
+              <label>Último inicio de periodo</label>
+              <input type="date" id="inputLMP" />
+            </div>
+            <div>
+              <label>Días de ciclo (promedio)</label>
+              <input type="number" id="inputCycle" min="15" max="60" placeholder="28" />
+            </div>
+            <div>
+              <label>Días de sangrado</label>
+              <input type="number" id="inputFlowDays" min="1" max="10" placeholder="5" />
+            </div>
+          </div>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <button id="saveBasics" class="btn">Guardar</button>
+            <button id="jumpCalendar" class="btn secondary">Ver calendario</button>
+          </div>
+        </div>
+
+        <div class="card span-6">
+          <h3>Resumen rápido</h3>
+          <ul id="quickFacts" class="helper" style="padding-left:18px; line-height:1.9;">
+            <li>Día del ciclo: <b id="cycleDay">–</b></li>
+            <li>Ventana fértil: <b id="fertileWindow">–</b></li>
+            <li>Próximo periodo estimado: <b id="nextPeriod">–</b></li>
+          </ul>
+        </div>
+
+        <div class="card span-12">
+          <h3>Calendario del mes</h3>
+          <div id="homeCalendar" class="calendar"></div>
+        </div>
+      </section>
+
+      <!-- CALENDARIO -->
+      <section class="grid view" id="view-calendario" style="display:none;">
+        <div class="card span-12">
+          <div class="cal-controls" style="display:flex; gap:8px; align-items:center; justify-content:space-between; margin-bottom:8px;">
+            <div class="chips legend">
+  <span>🩸 Periodo</span>
+  <span>🌱 Fértil</span>
+  <span>🌸 Ovulación</span>
+</div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn small secondary" id="prevMonth">◀</button>
+              <button class="btn small secondary" id="todayBtn">Hoy</button>
+              <button class="btn small secondary" id="nextMonth">▶</button>
+            </div>
+          </div>
+          <div id="bigCalendar" class="calendar"></div>
+        </div>
+      </section>
+
+      <!-- SÍNTOMAS -->
+      <section class="grid view" id="view-sintomas" style="display:none;">
+        <div class="card span-6">
+          <h3>Registrar síntomas y humor</h3>
+          <div class="row">
+            <div>
+              <label>Fecha</label>
+              <input type="date" id="symDate" />
+            </div>
+            <div>
+              <label>Humor</label>
+              <select id="symMood">
+                <option>Feliz</option>
+                <option>Tranquila</option>
+                <option>Ansiosa</option>
+                <option>Irritable</option>
+                <option>Triste</option>
+                <option>Cansada</option>
+              </select>
+            </div>
+          </div>
+          <label style="margin-top:10px;">Síntomas</label>
+          <div class="chips" id="symOptions"></div>
+          <label style="margin-top:10px;">Notas</label>
+          <textarea id="symNotes" rows="4" placeholder="Detalles adicionales"></textarea>
+          <div style="margin-top:10px; display:flex; gap:8px;">
+            <button id="addSymptom" class="btn">Guardar registro</button>
+            <button id="clearSymptomForm" class="btn secondary">Limpiar</button>
+          </div>
+        </div>
+        <div class="card span-6">
+          <h3>Historial</h3>
+          <div id="symList" class="helper">Sin registros aún.</div>
+        </div>
+      </section>
+
+      <!-- CHAT -->
+      <section class="grid view" id="view-chat" style="display:none;">
+        <div class="card span-12">
+          
+          <div class="chat-box">
+            
+              <div id="chtl-inline-bot" style="width: 100%; height:1000px;"></div>
+              <!-- Preguntas sugeridas -->
+
+              
+            </div>
+
+          
+          
+  
+          
+        </div>
+      </section>
+      <section class="grid view" id="view-inicio">
+       <div>
+        <h2>pesi</h2>
+       </div>
+      </section>
+
+<!-- ====== Sección de flujos ====== -->
+<section class="grid view" id="view-flujos" style="display:none;">
+  <div class="card span-12">
+    <h3>Guía visual de flujos y colores</h3>
+    <p class="helper">
+      Ejemplos ilustrativos (no fotos reales). Si notas olor fuerte, coágulos muy grandes o cambios bruscos, consulta con un profesional.
+    </p>
+    
+    <div class="grid">
+      <div class="card span-4 flujo-card" data-flujo="Ligero" data-info="Color rosado/rojo claro, manchado leve. Suele aparecer al inicio o final del periodo." data-img="imagenes/flujo ligero.jpeg">
+        <h4>Ligero</h4>
+      </div>
+
+      <div class="card span-4 flujo-card" data-flujo="Moderado" data-info="Rojo brillante, flujo constante. Cambia compresas/tampones cada 3–4 h según necesidad." data-img="imagenes/flujo normla.jpeg">
+        <h4>Moderado</h4>
+      </div>
+
+      <div class="card span-4 flujo-card" data-flujo="Abundante" data-info="Rojo oscuro con posibles coágulos. Si empapas cada hora o tienes mareos, busca atención médica." data-img="imagenes/flujo abundante.jpeg">
+        <h4>Abundante</h4>
+      </div>
+
+      <div class="card span-4 flujo-card" data-flujo="Marrón" data-info="Flujo marrón al inicio o final del periodo, generalmente viejo y más espeso." data-img="imagenes/flujo marron.jpeg">
+        <h4>Marrón</h4>
+      </div>
+
+      <div class="card span-4 flujo-card" data-flujo="Naranja" data-info="Puede aparecer por mezcla de sangre y flujo vaginal; si persiste, consulta con un profesional." data-img="imagenes/flujo naranja.jpeg">
+        <h4>Naranja</h4>
+      </div>
+
+      <div class="card span-4 flujo-card" data-flujo="Grisáceo" data-info="Flujo grisáceo puede indicar infección; acude a revisión médica." data-img="imagenes/4b9c6a49.jpeg">
+        <h4>Grisáceo</h4>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Sección de métodos anticonceptivos ====== -->
+<section class="grid view" id="view-anticonceptivos" style="display:none;">
+  <div class="card span-12">
+    <h3>Métodos anticonceptivos</h3>
+    <p class="helper">
+      Información sobre métodos anticonceptivos y su uso correcto.
+    </p>
+    
+    <div class="grid">
+      <div class="card span-4 metodo-card" data-metodo="Condon" data-info="Barrera de látex que evita embarazos y reduce riesgo de ITS." data-img="imagenes/condones.jpg">
+        <h4>Condon</h4>
+      </div>
+
+      <div class="card span-4 metodo-card" data-metodo="Píldora anticonceptiva" data-info="Pastilla diaria que regula hormonas para evitar embarazo." data-img="imagenes/pildoras anticonceptivas.jpg">
+        <h4>Píldora</h4>
+      </div>
+
+      <div class="card span-4 metodo-card" data-metodo="DIU" data-info="Dispositivo intrauterino que previene el embarazo por varios años." data-img="imagenes/diu.jpg">
+        <h4>DIU</h4>
+      </div>
+
+      <div class="card span-4 metodo-card" data-metodo="Implante" data-info="Varilla colocada bajo la piel que libera hormonas por hasta 3 años." data-img="imagenes/implante.jpg">
+        <h4>Implante</h4>
+      </div>
+
+      <div class="card span-4 metodo-card" data-metodo="Inyección hormonal" data-info="Inyección cada 1–3 meses que evita embarazo al liberar hormonas." data-img="imagenes/inyeccion-anticonceptiva.png">
+        <h4>Inyección</h4>
+      </div>
+
+      <div class="card span-4 metodo-card" data-metodo="Anillo vaginal" data-info="Anillo flexible que se coloca en la vagina y libera hormonas por 3 semanas." data-img="imagenes/Anillo_anticonceptivo.jpeg">
+        <h4>Anillo</h4>
+      </div>
+
+      <div class="card span-4 metodo-card" data-metodo="Parche hormonal" data-info="Se adhiere a la piel y libera hormonas para prevenir embarazo semanalmente." data-img="imagenes/parche anticonceptivo.jpg">
+        <h4>Parche</h4>
+      </div>
+
+      <div class="card span-4 metodo-card" data-metodo="Método de retiro" data-info="Retiro del pene antes de eyacular; menos confiable que otros métodos." data-img="img/retiro.jpg">
+        <h4>Retiro</h4>
+      </div>
+
+      <div class="card span-4 metodo-card" data-metodo="Métodos de barrera femenina" data-info="Diafragma o capuchón cervical que cubre el cuello uterino para evitar el paso del esperma." data-img="imagenes/diafragma-anticonceptivo.jpg">
+        <h4>Barrera femenina</h4>
+      </div>
+
+      <div class="card span-4 metodo-card" data-metodo="Espermicidas" data-info="Sustancias químicas que inmovilizan espermatozoides, suelen usarse junto a barreras." data-img="imagenes/espermicidas.jpg">
+        <h4>Espermicidas</h4>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ====== Sección de Salud Alimenticia ====== -->
+<section class="grid view" id="view-salud" style="display:none;">
+  <div class="card span-12">
+    <h3>Salud alimenticia durante el periodo</h3>
+    <p class="helper">
+      Algunos alimentos pueden ayudarte a sentirte mejor y reducir molestias durante la menstruación:
+    </p>
+
+    <div class="grid">
+      <div class="card span-4 alimento-card" 
+           data-metodo="Chocolate oscuro" 
+           data-info="Rico en magnesio, ayuda a relajar los músculos y mejorar el ánimo." 
+           data-img="imagenes/chocolate oscuro.jpeg">
+        <h4>Chocolate oscuro</h4>
+      </div>
+
+      <div class="card span-4 alimento-card" 
+           data-metodo="Verduras verdes" 
+           data-info="Espinaca, brócoli y kale aportan hierro y reducen el cansancio." 
+           data-img="imagenes/verduras.jpeg">
+        <h4>Verduras verdes</h4>
+      </div>
+
+      <div class="card span-4 alimento-card" 
+           data-metodo="Pescados grasos" 
+           data-info="Salmón, sardinas y atún aportan omega-3 que reducen inflamación." 
+           data-img="imagenes/pescados.jpeg">
+        <h4>Pescados grasos</h4>
+      </div>
+
+      <div class="card span-4 alimento-card" 
+           data-metodo="Frutos secos" 
+           data-info="Nueces, almendras y semillas ayudan a controlar los antojos y aportan energía." 
+           data-img="imagenes/frutos secos.jpeg">
+        <h4>Frutos secos</h4>
+      </div>
+
+      <div class="card span-4 alimento-card" 
+           data-metodo="Infusiones" 
+           data-info="El té de manzanilla y jengibre alivia cólicos y mejora la digestión." 
+           data-img="imagenes/TE.jpeg">
+        <h4>Infusiones</h4>
+      </div>
+
+      <div class="card span-4 alimento-card" 
+           data-metodo="Agua" 
+           data-info="Mantenerse hidratada disminuye la hinchazón y mejora el bienestar general." 
+           data-img="imagenes/agua.jpeg">
+        <h4>Agua</h4>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ====== Modal único para ambas secciones ====== -->
+<div id="modalGeneral" class="modal-overlay" style="display:none;">
+  <div class="modal-window">
+    <span class="modal-close">&times;</span>
+    <h3 id="modalTitle"></h3>
+    <img id="modalImg" src="" alt="Imagen" style="max-width:100%; border-radius:12px; margin-bottom:10px;">
+    <p id="modalDesc"></p>
+  </div>
+</div>
+
+<style>
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  .modal-window {
+    background: #fff;
+    padding: 20px;
+    border-radius: 16px;
+    max-width: 400px;
+    text-align: center;
+    transform: scale(0.7);
+    opacity: 0;
+    transition: all 0.3s ease;
+  }
+  .modal-window.show {
+    transform: scale(1);
+    opacity: 1;
+  }
+  .modal-close {
+    position: absolute;
+    top: 10px; right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  .flujo-card, .metodo-card {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .flujo-card:hover, .metodo-card:hover {
+    transform: scale(1.05);
+  }
+</style>
+
+<script>
+  const modal = document.getElementById("modalGeneral");
+  const modalWindow = modal.querySelector(".modal-window");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalDesc = document.getElementById("modalDesc");
+  const modalImg = document.getElementById("modalImg");
+  const closeModal = modal.querySelector(".modal-close");
+
+  function abrirModal(title, desc, img) {
+    modalTitle.textContent = title;
+    modalDesc.textContent = desc;
+    modalImg.src = img;
+    modal.style.display = "flex";
+    setTimeout(() => modalWindow.classList.add("show"), 10);
+  }
+
+  document.querySelectorAll(".flujo-card").forEach(card => {
+    card.addEventListener("click", () => abrirModal(card.dataset.flujo, card.dataset.info, card.dataset.img));
+  });
+
+  document.querySelectorAll(".metodo-card").forEach(card => {
+    card.addEventListener("click", () => abrirModal(card.dataset.metodo, card.dataset.info, card.dataset.img));
+  });
+
+  closeModal.addEventListener("click", () => {
+    modalWindow.classList.remove("show");
+    setTimeout(() => modal.style.display = "none", 300);
+  });
+
+  modal.addEventListener("click", e => {
+    if (e.target === modal) {
+      modalWindow.classList.remove("show");
+      setTimeout(() => modal.style.display = "none", 300);
+    }
+  });
+
+  document.querySelectorAll(".flujo-card").forEach(card => {
+  card.addEventListener("click", () => abrirModal(card.dataset.flujo, card.dataset.info, card.dataset.img));
+});
+
+document.querySelectorAll(".metodo-card").forEach(card => {
+  card.addEventListener("click", () => abrirModal(card.dataset.metodo, card.dataset.info, card.dataset.img));
+});
+
+// 🔹 NUEVO: alimentos
+document.querySelectorAll(".alimento-card").forEach(card => {
+  card.addEventListener("click", () => abrirModal(card.dataset.metodo, card.dataset.info, card.dataset.img));
+});
+
+</script>
+
+      <section class="grid view" id="view-ajustes" style="display:none;">
+        <div class="card span-6">
+          <h3>Cuenta</h3>
+          <label>Nombre</label>
+          <input id="setName" placeholder="Tu nombre" />
+          <label style="margin-top:10px;">Objetivo</label>
+          <select id="setGoal">
+            <option value="seguimiento">Seguir mi periodo</option>
+            <option value="concebir">Intentar concebir</option>
+            <option value="embarazo">Seguir mi embarazo</option>
+          </select>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <button id="saveAccount" class="btn">Guardar</button>
+          </div>
+        </div>
+        <div class="card span-6">
+          <h3>Privacidad y datos</h3>
+          <p class="helper">Tus datos se guardan localmente en este dispositivo (localStorage). Puedes borrarlos cuando quieras.</p>
+          <button id="wipeData" class="btn danger">Borrar todo (nombre, ciclo, síntomas, tema)</button>
+        </div>
+      </section>
+
+      <!-- AJUSTES -->
+      <section class="grid view" id="view-ajustes" style="display:none;">
+        <div class="card span-6">
+          <h3>Cuenta</h3>
+          <label>Nombre</label>
+          <input id="setName" placeholder="Tu nombre" />
+          <label style="margin-top:10px;">Objetivo</label>
+          <select id="setGoal">
+            <option value="seguimiento">Seguir mi periodo</option>
+            <option value="concebir">Intentar concebir</option>
+            <option value="embarazo">Seguir mi embarazo</option>
+          </select>
+          <div style="margin-top:12px; display:flex; gap:8px;">
+            <button id="saveAccount" class="btn">Guardar</button>
+          </div>
+        </div>
+        <div class="card span-6">
+          <h3>Privacidad y datos</h3>
+          <p class="helper">Tus datos se guardan localmente en este dispositivo (localStorage). Puedes borrarlos cuando quieras.</p>
+          <button id="wipeData" class="btn danger">Borrar todo (nombre, ciclo, síntomas, tema)</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ONBOARDING -->
+  <div class="modal" id="onboarding">
+    <div class="box">
+      <h2>¡Bienvenida a Florecer!</h2>
+      <p class="helper">Empecemos con lo básico para personalizar tu experiencia.</p>
+      <div class="row">
+        <div>
+          <label>¿Cuál es tu objetivo?</label>
+          <select id="obGoal">
+            <option value="seguimiento">Seguir mi periodo</option>
+            <option value="concebir">Intentar concebir</option>
+            <option value="embarazo">Seguir mi embarazo</option>
+          </select>
+        </div>
+        <div>
+          <label>Nombre para dirigirme a ti</label>
+          <input id="obName" placeholder="Ej. Sofía" />
+        </div>
+        <div>
+          <label>Último inicio de periodo</label>
+          <input type="date" id="obLMP" />
+        </div>
+        <div>
+          <label>Días de ciclo (promedio)</label>
+          <input type="number" id="obCycle" min="15" max="60" placeholder="28" />
+        </div>
+        <div>
+          <label>Días de sangrado</label>
+          <input type="number" id="obFlowDays" min="1" max="10" placeholder="5" />
+        </div>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:8px; justify-content:flex-end;">
+        <button class="btn secondary" id="obSkip">Ahora no</button>
+        <button class="btn" id="obSave">Comenzar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.querySelectorAll("#sugerencias button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.getElementById("chatInput").value = btn.textContent;
+    document.getElementById("chatSend").click();
+  });
+});
+    // ====== Utilidades de fecha ======
+    const fmt = (d) => d ? new Date(d).toLocaleDateString('es-ES', { weekday:'short', day:'2-digit', month:'short', year:'numeric'}) : '–';
+    const ymd = (d) => { const x = new Date(d); const m = (x.getMonth()+1).toString().padStart(2,'0'); const day = x.getDate().toString().padStart(2,'0'); return `${x.getFullYear()}-${m}-${day}`; };
+    const addDays = (d, n) => { const x = new Date(d); x.setDate(x.getDate()+n); return x; };
+
+    // ====== Estado (persistir en localStorage) ======
+    const store = {
+      get(){ try { return JSON.parse(localStorage.getItem('mujer_plus')||'{}'); } catch { return {}; } },
+      set(data){ localStorage.setItem('mujer_plus', JSON.stringify(data)); },
+      patch(p){ const d = store.get(); store.set({...d, ...p}); },
+      wipe(){ localStorage.removeItem('mujer_plus'); }
+    };
+
+    const DEFAULTS = { cycle: 28, flowDays: 5, theme: 'light', goal:'seguimiento' };
+
+  // ====== Calendario y estimaciones ======
+function getModel(){
+  const s = { ...DEFAULTS, ...store.get() };
+  if (!s.lmp && s.lmpDate) s.lmp = s.lmpDate; // compat
+  return s;
+}
+
+function estimate(s){
+  if(!s.lmp) return {};
+  const lmp = new Date(s.lmp);
+  const cycle = Number(s.cycle||28);
+  const flow = Number(s.flowDays||5);
+  const today = new Date();
+
+  // Hallar el ciclo actual relativo a hoy
+  let start = new Date(lmp);
+  while (addDays(start, cycle) <= today) { start = addDays(start, cycle); }
+  const dayOfCycle = Math.max(1, Math.floor((today - start) / (1000*60*60*24)) + 1);
+
+  // Próxima ovulación: inicio de ciclo + (ciclo - 14)
+  const ovu = addDays(start, cycle - 14);
+  // Ventana fértil: 5 días antes de ovulación hasta ovulación
+  const fertileFrom = addDays(ovu, -5);
+  const fertileTo = new Date(ovu);
+  // Próximo periodo: inicio + ciclo
+  const nextPeriod = addDays(start, cycle);
+
+  return { today, start, dayOfCycle, ovu, fertileFrom, fertileTo, nextPeriod, flow, cycle, lmp };
+}
+
+// Genera todas las fechas de periodo en un rango de ±12 meses
+function generatePeriodDays(lmp, cycle, flow){
+  const out = new Set();
+  if (!lmp) return out;
+  const start = new Date(lmp);
+  const from = addDays(new Date(), -365); // hace 1 año
+  const to = addDays(new Date(), 365);    // un año adelante
+
+  let d = new Date(start);
+  while (d < from) d = addDays(d, cycle); // avanzar hasta rango
+
+  while (d <= to) {
+    for (let i=0; i<flow; i++) {
+      out.add(ymd(addDays(d,i)));
+    }
+    d = addDays(d, cycle);
+  }
+  return out;
+}
+
+function renderCalendar(container, refDate, s){
+  container.innerHTML = '';
+  const est = estimate(s);
+
+  const header = document.createElement('div');
+  header.className = 'cal-header';
+  const monthName = refDate.toLocaleDateString('es-ES', { month:'long', year:'numeric' });
+  header.innerHTML = `<strong style="text-transform:capitalize">${monthName}</strong>`;
+  container.appendChild(header);
+
+  const grid = document.createElement('div');
+  grid.className = 'cal-grid';
+  const dows = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+  dows.forEach(d => { const el = document.createElement('div'); el.className='dow'; el.textContent=d; grid.appendChild(el); });
+
+  const first = new Date(refDate.getFullYear(), refDate.getMonth(), 1);
+  const startDow = (first.getDay() + 6) % 7; // lunes-base
+  const daysInMonth = new Date(refDate.getFullYear(), refDate.getMonth()+1, 0).getDate();
+  const prevMonthDays = new Date(refDate.getFullYear(), refDate.getMonth(), 0).getDate();
+
+  const periodDays = generatePeriodDays(s.lmp, s.cycle||28, s.flowDays||5);
+
+  // ventana fértil y ovulación
+  const fertileDays = new Set();
+  const ovulationDays = new Set();
+  if (s.lmp) {
+    let d = new Date(s.lmp);
+    while (d < addDays(refDate, -365)) d = addDays(d, s.cycle||28);
+    while (d < addDays(refDate, 365)) {
+      const ovu = addDays(d, (s.cycle||28) - 14);
+      ovulationDays.add(ymd(ovu));
+      for(let i=5;i>=0;i--) fertileDays.add(ymd(addDays(ovu,-i)));
+      d = addDays(d, s.cycle||28);
+    }
+  }
+
+  // celdas previas del mes anterior
+  for(let i=startDow-1;i>=0;i--){
+    const d = prevMonthDays - i;
+    const date = new Date(refDate.getFullYear(), refDate.getMonth()-1, d);
+    const key = ymd(date);
+
+    const cell = document.createElement('div');
+    cell.className = 'day muted';
+    cell.textContent = d;
+
+    if (periodDays.has(key)) cell.innerHTML = `${d} 🩸`;
+    if (fertileDays.has(key)) cell.innerHTML = `${d} 🌱`;
+    if (ovulationDays.has(key)) cell.innerHTML = `${d} 🌸`;
+
+    grid.appendChild(cell);
+  }
+
+  // celdas del mes actual
+  for(let d=1; d<=daysInMonth; d++){
+    const date = new Date(refDate.getFullYear(), refDate.getMonth(), d);
+    const key = ymd(date);
+
+    const cell = document.createElement('div');
+    cell.className = 'day';
+    cell.textContent = d;
+
+    if (periodDays.has(key)) cell.innerHTML = `${d} 🩸`;
+    if (fertileDays.has(key)) cell.innerHTML = `${d} 🌱`;
+    if (ovulationDays.has(key)) cell.innerHTML = `${d} 🌸`;
+
+    grid.appendChild(cell);
+  }
+
+  // completar con días del siguiente mes
+  const totalCells = startDow + daysInMonth;
+  const tail = (7 - (totalCells % 7)) % 7;
+  for(let i=1;i<=tail;i++){
+    const date = new Date(refDate.getFullYear(), refDate.getMonth()+1, i);
+    const key = ymd(date);
+
+    const cell = document.createElement('div');
+    cell.className = 'day muted';
+    cell.textContent = i;
+
+    if (periodDays.has(key)) cell.innerHTML = `${i} 🩸`;
+    if (fertileDays.has(key)) cell.innerHTML = `${i} 🌱`;
+    if (ovulationDays.has(key)) cell.innerHTML = `${i} 🌸`;
+
+    grid.appendChild(cell);
+  }
+
+  container.appendChild(grid);
+}
+
+function updateHome(s){
+  document.getElementById('inputLMP').value = s.lmp ? ymd(s.lmp) : '';
+  document.getElementById('inputCycle').value = s.cycle || '';
+  document.getElementById('inputFlowDays').value = s.flowDays || '';
+
+  const est = estimate(s);
+  const chips = document.getElementById('ovulationSummary');
+  chips.innerHTML = '';
+  if (est.ovu) {
+    chips.innerHTML = `
+      <span class="chip">Ovulación: ${fmt(est.ovu)}</span>
+      <span class="chip">Ventana fértil: ${fmt(est.fertileFrom)} → ${fmt(est.fertileTo)}</span>
+      <span class="chip">Próx. periodo: ${fmt(est.nextPeriod)}</span>
+    `;
+  } else {
+    chips.innerHTML = '<span class="helper">Agrega tu último periodo para ver estimaciones</span>';
+  }
+
+  document.getElementById('cycleDay').textContent = est.dayOfCycle || '–';
+  document.getElementById('fertileWindow').textContent = est.fertileFrom ? `${fmt(est.fertileFrom)} a ${fmt(est.fertileTo)}` : '–';
+  document.getElementById('nextPeriod').textContent = est.nextPeriod ? fmt(est.nextPeriod) : '–';
+
+  renderCalendar(document.getElementById('homeCalendar'), new Date(), s);
+}
+
+
+    // ====== Navegación ======
+    function show(view){
+      document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));
+      document.querySelector(`.nav button[data-view="${view}"]`).classList.add('active');
+      document.querySelectorAll('.view').forEach(v=>v.style.display='none');
+      document.getElementById(`view-${view}`).style.display='grid';
+    }
+
+    // ====== Síntomas ======
+    const SYMPTOMS = ['Cólicos','Dolor de cabeza','Sensibilidad en senos','Espalda baja','Antojos','Náuseas','Acné','Insomnio','Hinchazón','Diarrea/estreñimiento','Mareos','Cambios de apetito'];
+    function renderSymOptions(){
+      const box = document.getElementById('symOptions');
+      box.innerHTML = '';
+      SYMPTOMS.forEach(s => {
+        const id = 'sym-'+s;
+        const wrap = document.createElement('label'); wrap.className='chip'; wrap.style.cursor='pointer';
+        wrap.innerHTML = `<input type="checkbox" value="${s}" style="margin-right:6px;"> ${s}`;
+        box.appendChild(wrap);
+      });
+    }
+    function getCheckedSymptoms(){
+      return Array.from(document.querySelectorAll('#symOptions input[type=checkbox]:checked')).map(i=>i.value);
+    }
+    function renderSymList(){
+      const s = getModel();
+      const list = s.symptoms || [];
+      const box = document.getElementById('symList');
+      if(!list.length){ box.textContent='Sin registros aún.'; return; }
+      box.innerHTML = '';
+      list.sort((a,b)=> a.date < b.date ? 1 : -1);
+      list.forEach(it => {
+        const card = document.createElement('div');
+        card.style.border='1px solid var(--border)'; card.style.borderRadius='12px'; card.style.padding='8px 10px'; card.style.marginBottom='8px';
+        card.innerHTML = `<div><strong>${new Date(it.date).toLocaleDateString('es-ES')}</strong> — Humor: ${it.mood}</div>
+                          <div class="helper">${(it.syms||[]).join(', ') || '—'}</div>
+                          <div>${it.notes ? it.notes : ''}</div>`;
+        box.appendChild(card);
+      });
+    }
+
+    // ====== Chatbot (base de >80 Q&A) ======
+
+
+    // ====== Tema ======
+    function applyTheme(theme){ document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : 'light'); }
+
+    // ====== Inicialización ======
+    const nav = document.getElementById('nav');
+    nav.addEventListener('click', (e)=>{
+      const b = e.target.closest('button[data-view]'); if (!b) return; show(b.dataset.view);
+      if (b.dataset.view === 'chat' && !document.getElementById('chatLog').dataset.greeted) {
+        document.getElementById('chatLog').dataset.greeted = '1';
+        greetBot();
+      }
+      if (b.dataset.view === 'calendario') renderCalendar(document.getElementById('bigCalendar'), state.calRef, getModel());
+    });
+
+    document.getElementById('themeBtn').addEventListener('click', ()=>{
+      const s = getModel(); const next = (s.theme === 'dark' ? 'light' : 'dark'); store.patch({theme: next}); applyTheme(next);
+    });
+
+    // Home actions
+    document.getElementById('saveBasics').addEventListener('click', ()=>{
+      const lmp = document.getElementById('inputLMP').value || null;
+      const cycle = Number(document.getElementById('inputCycle').value || DEFAULTS.cycle);
+      const flowDays = Number(document.getElementById('inputFlowDays').value || DEFAULTS.flowDays);
+      store.patch({ lmp, cycle, flowDays });
+      updateHome(getModel());
+      alert('Guardado ✅');
+    });
+    document.getElementById('jumpCalendar').addEventListener('click', ()=>{ show('calendario'); renderCalendar(document.getElementById('bigCalendar'), state.calRef, getModel()); });
+
+    // Calendario grande
+    const state = { calRef: new Date() };
+    document.getElementById('prevMonth').addEventListener('click', ()=>{ state.calRef.setMonth(state.calRef.getMonth()-1); renderCalendar(document.getElementById('bigCalendar'), state.calRef, getModel()); });
+    document.getElementById('nextMonth').addEventListener('click', ()=>{ state.calRef.setMonth(state.calRef.getMonth()+1); renderCalendar(document.getElementById('bigCalendar'), state.calRef, getModel()); });
+    document.getElementById('todayBtn').addEventListener('click', ()=>{ state.calRef = new Date(); renderCalendar(document.getElementById('bigCalendar'), state.calRef, getModel()); });
+
+    // Síntomas
+    renderSymOptions();
+    document.getElementById('symDate').value = ymd(new Date());
+    document.getElementById('addSymptom').addEventListener('click', ()=>{
+      const date = document.getElementById('symDate').value || ymd(new Date());
+      const mood = document.getElementById('symMood').value;
+      const syms = getCheckedSymptoms();
+      const notes = document.getElementById('symNotes').value.trim();
+      const s = getModel();
+      const list = s.symptoms || [];
+      list.push({ date, mood, syms, notes });
+      store.patch({ symptoms: list });
+      renderSymList();
+      alert('Registro guardado ✅');
+    });
+    document.getElementById('clearSymptomForm').addEventListener('click', ()=>{
+      document.querySelectorAll('#symOptions input[type=checkbox]').forEach(i=>i.checked=false);
+      document.getElementById('symNotes').value='';
+    });
+
+    
+
+    // Ajustes
+    document.getElementById('saveAccount').addEventListener('click', ()=>{
+      const name = (document.getElementById('setName').value||'').trim();
+      const goal = document.getElementById('setGoal').value;
+      store.patch({ name, goal });
+      hydrateUI(); alert('Datos guardados ✅');
+    });
+    document.getElementById('wipeData').addEventListener('click', ()=>{
+      if (confirm('¿Seguro que quieres borrar todos los datos guardados en este dispositivo?')) {
+        store.wipe(); location.reload();
+      }
+    });
+
+    // Onboarding
+    document.getElementById('obSave').addEventListener('click', ()=>{
+      const name = document.getElementById('obName').value.trim();
+      const goal = document.getElementById('obGoal').value;
+      const lmp = document.getElementById('obLMP').value || null;
+      const cycle = Number(document.getElementById('obCycle').value || DEFAULTS.cycle);
+      const flowDays = Number(document.getElementById('obFlowDays').value || DEFAULTS.flowDays);
+      store.set({ name, goal, lmp, cycle, flowDays, theme: 'light' });
+      document.getElementById('onboarding').classList.remove('show');
+      hydrateUI();
+    });
+    document.getElementById('obSkip').addEventListener('click', ()=>{ document.getElementById('onboarding').classList.remove('show'); });
+
+    // Hidratar UI
+    function hydrateUI(){
+      const s = getModel();
+      applyTheme(s.theme||'light');
+      document.getElementById('userTag').textContent = s.name ? `Sesión de ${s.name}` : 'Bienvenida';
+      document.getElementById('welcomeText').textContent = s.name ? `Hola, ${s.name} ` : 'Hola 👋';
+      const chips = document.getElementById('goalChips');
+      chips.innerHTML = '';
+      const map = { seguimiento:'Seguir mi periodo', concebir:'Intentar concebir', embarazo:'Seguir mi embarazo' };
+      const ch = document.createElement('span'); ch.className='chip'; ch.textContent = 'Objetivo: ' + (map[s.goal]||'Seguir mi periodo'); chips.appendChild(ch);
+
+      document.getElementById('setName').value = s.name || '';
+      document.getElementById('setGoal').value = s.goal || 'seguimiento';
+
+      // Home
+      updateHome(s);
+      // Síntomas
+      renderSymList();
+    }
+
+    // Inicio de la app
+    (function start(){
+      const s = getModel();
+      applyTheme(s.theme||'light');
+      if (!s.name) { document.getElementById('onboarding').classList.add('show'); }
+      hydrateUI();
+    })();
+  </script>
+  <script>
+  window.chtlConfig = {
+    chatbotId: "9712256824",
+    display: "page_inline",
+    container: "#chtl-inline-bot",
+    welcomeMessage: "Hola, soy tu asistente virtual",
+    themeColor: "#ff69b4"
+  };
+</script>
+
+<script async src="https://chatling.ai/js/embed.js"></script>
+
+</body>
+</html>
